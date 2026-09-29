@@ -8531,7 +8531,7 @@ internal fun renderStudioCanvas() {
     internal fun fractionOp(a: String, b: String, op: String): String {
         val x = frac(a)
         val y = frac(b)
-        if (op == "÷" && y.first == 0) error("Pembagi nol")
+        if (op == "÷" && y.first == 0L) error("Pembagi nol")
         val numerator = when (op) {
             "+" -> x.first * y.second + y.first * x.second
             "−" -> x.first * y.second - y.first * x.second
@@ -8544,7 +8544,7 @@ internal fun renderStudioCanvas() {
             "÷" -> x.second * y.first
             else -> error("Operasi tidak didukung")
         }
-        require(denominator != 0) { "Penyebut nol" }
+        require(denominator != 0L) { "Penyebut nol" }
         val gcd = kotlin.math.abs(
             java.math.BigInteger.valueOf(numerator.toLong())
                 .gcd(java.math.BigInteger.valueOf(denominator.toLong()))
@@ -9060,6 +9060,7 @@ internal fun renderStudioCanvas() {
                 } catch (e: Exception) { output("MQTT error: ${e.message}"); break }
             }
         }
+        return messages.toString()
     }
 
     internal fun wifiInfo() {
@@ -10263,8 +10264,36 @@ internal fun workspaceCard(dir: File): View {
         }
     }
 
-    internal fun writeHttpResponse(socket: Socket, code: Int, contentType: String, body: String, headOnly: Boolean = false) =
+    internal fun writeHttpResponse(
+        socket: Socket,
+        code: Int,
+        contentType: String,
+        body: String,
+        headOnly: Boolean = false
+    ): Unit {
         writeHttpResponse(socket, code, contentType, body.toByteArray(StandardCharsets.UTF_8), headOnly)
+    }
+
+    internal fun writeHttpResponse(
+        socket: Socket,
+        code: Int,
+        contentType: String,
+        body: ByteArray,
+        headOnly: Boolean = false
+    ): Unit {
+        val reason = when (code) {
+            200 -> "OK"; 400 -> "Bad Request"; 403 -> "Forbidden"
+            404 -> "Not Found"; 405 -> "Method Not Allowed"; else -> "Error"
+        }
+        val header = "HTTP/1.1 $code $reason\\r\\n" +
+            "Content-Type: $contentType\\r\\n" +
+            "Content-Length: ${body.size}\\r\\n" +
+            "Connection: close\\r\\n\\r\\n"
+        val out = socket.getOutputStream()
+        out.write(header.toByteArray(StandardCharsets.ISO_8859_1))
+        if (!headOnly) out.write(body)
+        out.flush()
+    }
 
 
 

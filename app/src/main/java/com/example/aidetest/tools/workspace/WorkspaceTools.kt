@@ -82,6 +82,30 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 
 
+
+
+private fun MainActivity.workspaceRoot(): File =
+    File(filesDir, "workspaces").apply { mkdirs() }
+
+internal fun MainActivity.studioHub(
+    title: String,
+    description: String,
+    tools: List<Pair<String, String>>
+) {
+    clearPage(title)
+    content.addView(
+        toolHeader(title, description, "apps-box"),
+        LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(10) }
+    )
+    tools.forEach { (name, id) ->
+        content.addView(
+            settingRowClickable(name, "Buka tool", "Tool $name", iconFor(id)) {
+                openTool(id)
+            }
+        )
+    }
+}
+
 fun MainActivity.workspaceCenterTool() {
         clearPage("Workspace Center")
         val dirs = workspaceRoot().listFiles()?.filter { it.isDirectory }?.sortedByDescending { it.lastModified() } ?: emptyList()

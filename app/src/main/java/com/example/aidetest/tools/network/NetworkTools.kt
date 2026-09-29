@@ -90,7 +90,7 @@ fun MainActivity.wifiInfo() {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 2001)
             return
         }
-        val wm=applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
+        val wm=applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         @Suppress("DEPRECATION")
         val i=wm.connectionInfo
         out.text="SSID: ${i.ssid}\nBSSID: ${i.bssid}\nRSSI: ${i.rssi} dBm\nLink speed: ${i.linkSpeed} Mbps\nFrequency: ${i.frequency} MHz"
@@ -192,7 +192,7 @@ fun MainActivity.networkInfoTool() {
         } catch (e: Exception) {
             infoRow("Error", e.message ?: "Tidak dapat membaca interface")
         }
-        val wm = applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
+        val wm = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         @Suppress("DEPRECATION")
         val ip = wm.connectionInfo.ipAddress
         val ipText = if (ip == 0) "Tidak terhubung" else listOf(ip and 255, ip shr 8 and 255, ip shr 16 and 255, ip shr 24 and 255).joinToString(".")
@@ -204,7 +204,7 @@ fun MainActivity.networkScannerTool() {
         toolWorkspace("Network Scanner", "Cari host dan port TCP terbuka pada subnet lokal.", "magnify-scan")
         toolWorkspaceSection("SCAN CONFIG", "Tentukan subnet dan daftar port sebelum memulai scan.")
         val subnet = edit("Contoh 192.168.1.0/24")
-        val wm = applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
+        val wm = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         @Suppress("DEPRECATION")
         val ip = wm.connectionInfo.ipAddress
         val defaultSubnet = if (ip != 0) {
@@ -265,7 +265,7 @@ fun MainActivity.networkCenterTool() {
         clearPage("Network Center")
         toolWorkspace("Network Center", "Ringkasan koneksi, interface, internet, dan alamat jaringan perangkat.", "lan-connect")
         toolWorkspaceSection("NETWORK STATUS", "Informasi dibaca langsung dari sistem Android.")
-        val cm=getSystemService(CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+        val cm=getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
         val n=cm.activeNetwork; val caps=if(n!=null)cm.getNetworkCapabilities(n) else null
         infoRow("Status", if(n!=null) "Terhubung" else "Tidak terhubung")
         infoRow("Transport", when { caps?.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI)==true -> "Wi‑Fi"; caps?.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR)==true -> "Seluler"; caps?.hasTransport(android.net.NetworkCapabilities.TRANSPORT_ETHERNET)==true -> "Ethernet"; else -> "Lainnya / tidak diketahui" })

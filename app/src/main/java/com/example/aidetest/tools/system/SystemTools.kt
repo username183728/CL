@@ -102,7 +102,7 @@ fun MainActivity.deviceInfoTool() {
         toolWorkspace("Device Info", "Ringkasan perangkat Android, layar, ABI, RAM, dan build.", "cellphone-information")
         toolWorkspaceSection("DEVICE", "Data dibaca langsung dari sistem perangkat.")
         val dm = resources.displayMetrics
-        val am = getSystemService(ACTIVITY_SERVICE) as ActivityManager
+        val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val mem = ActivityManager.MemoryInfo().also { am.getMemoryInfo(it) }
         infoRow("Model", "${Build.MANUFACTURER} ${Build.MODEL}")
         infoRow("Android", "${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
@@ -207,7 +207,7 @@ fun MainActivity.clipboardManagerTool() {
 fun MainActivity.systemCenterTool() {
         clearPage("System Center")
         content.addView(label("System Center",22f,true)); content.addView(subLabel("Ringkasan CPU, RAM, storage, baterai, uptime dan konfigurasi Android.",12f))
-        val am=getSystemService(ACTIVITY_SERVICE) as ActivityManager; val mem=ActivityManager.MemoryInfo().also{am.getMemoryInfo(it)}
+        val am=getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager; val mem=ActivityManager.MemoryInfo().also{am.getMemoryInfo(it)}
         val stat=StatFs(Environment.getDataDirectory().path)
         infoRow("Device","${Build.MANUFACTURER} ${Build.MODEL}"); infoRow("Android","${Build.VERSION.RELEASE} • API ${Build.VERSION.SDK_INT}")
         infoRow("ABI",Build.SUPPORTED_ABIS.joinToString(", ")); infoRow("CPU cores",Runtime.getRuntime().availableProcessors().toString())

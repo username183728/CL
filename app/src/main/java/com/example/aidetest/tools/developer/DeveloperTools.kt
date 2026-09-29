@@ -109,7 +109,7 @@ fun MainActivity.restApiClientTool() {
         clearPage("REST / API Client")
         toolWorkspace("REST / API Client", "Kirim request HTTP dan periksa status, header, serta body respons.", "api")
         toolWorkspaceSection("REQUEST", "Tentukan method dan endpoint terlebih dahulu.")
-        val method = Spinner(this).apply { adapter = ArrayAdapter(this@MainActivity, android.R.layout.simple_spinner_dropdown_item, arrayOf("GET","POST","PUT","PATCH","DELETE","HEAD")) }
+        val method = Spinner(this).apply { adapter = ArrayAdapter(this@restApiClientTool, android.R.layout.simple_spinner_dropdown_item, arrayOf("GET","POST","PUT","PATCH","DELETE","HEAD")) }
         val url = edit("https://example.com/api")
         val headers = edit("Headers (satu per baris: Name: Value)")
         headers.minLines = 3
@@ -190,11 +190,11 @@ fun MainActivity.webProjectBuilder() {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             setPadding(dp(4), dp(12), dp(4), dp(8))
-            addView(MdiIconView(this@MainActivity).apply {
+            addView(MdiIconView(this@webProjectBuilder).apply {
                 setIconName(icon); setIconSize(20f); setTextColor(textMain)
                 layoutParams = LinearLayout.LayoutParams(dp(30), dp(30)).apply { rightMargin = dp(6) }
             })
-            addView(TextView(this@MainActivity).apply {
+            addView(TextView(this@webProjectBuilder).apply {
                 text = textValue; textSize = 13f; setTextColor(textMain)
                 setTypeface(typeface, android.graphics.Typeface.BOLD)
             })
@@ -206,16 +206,16 @@ fun MainActivity.webProjectBuilder() {
             background = bg(if (isDarkTheme) panel else Color.rgb(246,248,250), 18, if (isDarkTheme) line else Color.rgb(225,230,234))
         }
         val introRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
-        introRow.addView(MdiIconView(this@MainActivity).apply {
+        introRow.addView(MdiIconView(this@webProjectBuilder).apply {
             setIconName("web"); setIconSize(30f); setTextColor(textMain)
             layoutParams = LinearLayout.LayoutParams(dp(44), dp(44)).apply { rightMargin = dp(10) }
         })
         val introText = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-        introText.addView(TextView(this@MainActivity).apply {
+        introText.addView(TextView(this@webProjectBuilder).apply {
             text = "Web Project Builder"; textSize = 17f; setTextColor(textMain)
             setTypeface(typeface, android.graphics.Typeface.BOLD)
         })
-        introText.addView(TextView(this@MainActivity).apply {
+        introText.addView(TextView(this@webProjectBuilder).apply {
             text = "HTML + CSS + JavaScript → Build → Preview → Host"
             textSize = 11.5f; setTextColor(textMuted); setPadding(0, dp(3), 0, 0)
         })
