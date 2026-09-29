@@ -73,6 +73,7 @@ import kotlin.math.min
 import kotlin.math.ceil
 import kotlin.math.sqrt
 import kotlin.math.roundToInt
+import kotlin.math.pow
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -240,6 +241,7 @@ class MainActivity : Activity() {
     internal var studioNextId = 1
     internal var studioSelectedLinkId: String? = null
     internal val studioPrefsKey = "studio_widgets_v1"
+    internal val studioLinksPrefsKey = "studio_links_v1"
 
 
     internal val homeTools = listOf(
@@ -4185,6 +4187,7 @@ internal fun renderStudioCanvas() {
     }
 
     internal fun EditText.numberValue(): Double? = text.toString().trim().replace(',', '.').toDoubleOrNull()
+    internal fun EditText.num(): Double? = numberValue()
 
     internal fun preferredResistor(value: Double): Int {
         val e24 = doubleArrayOf(10.0, 11.0, 12.0, 13.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0, 27.0, 30.0, 33.0, 36.0, 39.0, 43.0, 47.0, 51.0, 56.0, 62.0, 68.0, 75.0, 82.0, 91.0)
@@ -4244,9 +4247,6 @@ internal fun renderStudioCanvas() {
         clipboardManager = cm
         clipboardListener = listener
         cm.addPrimaryClipChangedListener(listener)
-        // Keep a lightweight callback reference for the ActivityResult handler.
-        pendingOcrView = resultBox
-        pendingOcrPreview = preview
     }
 
     internal var pendingOcrView: EditText? = null
@@ -4363,7 +4363,7 @@ internal fun renderStudioCanvas() {
             sb.append("Files: $files\nUncompressed: ${bytesText(totalUncompressed)}\nDEX: $dex\nNative: $native\nresources.arsc: $resources\nManifest: $manifest\n")
             top.forEach { sb.append("  ").append(it).append("\n") }
         }
-        content.addView(button("Hentikan Scan") { networkScanStop.set(true) })
+        return sb.toString()
     }
 
     internal fun parseCidr24(cidr: String): Pair<String, Int>? {
@@ -4438,6 +4438,23 @@ internal fun renderStudioCanvas() {
         "pdf" -> "file-pdf-box"
         "txt", "md" -> "file-document-outline"
         else -> "file-outline"
+    }
+
+    internal var fileSortMode: Int
+        get() = prefs.getInt("file_sort_mode", 0)
+        set(value) { prefs.edit().putInt("file_sort_mode", value.coerceIn(0, 4)).apply() }
+    internal var fileFilterText: String = ""
+    internal fun recordRecentFile(file: File) {
+        val key = "recent_files_v1"
+        val current = runCatching { JSONArray(prefs.getString(key, "[]") ?: "[]") }.getOrElse { JSONArray() }
+        val path = file.absolutePath
+        val next = JSONArray()
+        next.put(path)
+        for (i in 0 until current.length()) {
+            val p = current.optString(i)
+            if (p.isNotBlank() && p != path && File(p).exists() && next.length() < 20) next.put(p)
+        }
+        prefs.edit().putString(key, next.toString()).apply()
     }
 
     internal fun sortFiles(files: List<File>): List<File> = when (fileSortMode) {
@@ -5519,6 +5536,17 @@ internal fun renderStudioCanvas() {
             next.put(if (o.optInt("id") == updated.optInt("id")) updated else o)
         }
         prefs.edit().putString("scheduled_reminders", next.toString()).apply()
+    }
+
+    internal fun cancelReminder(id: Int) {
+        val old = readReminders()
+        val next = JSONArray()
+        for (i in 0 until old.length()) {
+            val item = old.optJSONObject(i) ?: continue
+            if (item.optInt("id") != id) next.put(item)
+        }
+        prefs.edit().putString("scheduled_reminders", next.toString()).apply()
+        cancelReminderAlarm(id)
     }
 
     internal fun cancelReminderAlarm(id: Int) {
@@ -8549,6 +8577,78 @@ internal fun renderStudioCanvas() {
     internal fun colorFromHex(raw:String):String { var h=raw.trim().removePrefix("#"); if(h.length==3) h=h.map{"$it$it"}.joinToString(""); if(h.length!=6&&h.length!=8) error("HEX"); val a=if(h.length==8) h.substring(0,2).toInt(16) else 255; val off=if(h.length==8)2 else 0; val r=h.substring(off,off+2).toInt(16); val g=h.substring(off+2,off+4).toInt(16); val b=h.substring(off+4,off+6).toInt(16); val hsv=FloatArray(3); Color.colorToHSV(Color.rgb(r,g,b),hsv); val hsl=rgbToHsl(r,g,b); return "HEX = #${h.toUpperCase(Locale.US)}\nARGB = $a,$r,$g,$b\nRGB = $r,$g,$b\nHSL = ${fmt(hsl[0])}°, ${fmt(hsl[1])}%, ${fmt(hsl[2])}%\nHSV = ${fmt(hsv[0].toDouble())}°, ${fmt((hsv[1]*100).toDouble())}%, ${fmt((hsv[2]*100).toDouble())}%" }
     internal fun colorFromRgb(raw:String):String { val p=raw.split(",").map{it.trim().toInt()}; if(p.size!=3||p.any{it !in 0..255}) error("RGB"); return colorFromHex(String.format(Locale.US, "#%02X%02X%02X", p[0], p[1], p[2])) }
 
+    internal fun String.htmlEsc(): String = buildString(length) {
+        for (ch in this@htmlEsc) {
+            append(when (ch) {
+                '&' -> "&amp;"
+                '<' -> "&lt;"
+                '>' -> "&gt;"
+                '"' -> "&quot;"
+                '\'' -> "&#39;"
+                else -> ch
+            })
+        }
+    }
+
+    internal fun prettyJson(raw: String): String {
+        val text = raw.trim()
+        if (text.isEmpty()) return ""
+        return when {
+            text.startsWith("{") -> JSONObject(text).toString(2)
+            text.startsWith("[") -> JSONArray(text).toString(2)
+            else -> error("JSON harus dimulai dengan { atau [")
+        }
+    }
+
+    internal fun minifyJson(raw: String): String {
+        val text = raw.trim()
+        if (text.isEmpty()) return ""
+        return when {
+            text.startsWith("{") -> JSONObject(text).toString()
+            text.startsWith("[") -> JSONArray(text).toString()
+            else -> error("JSON harus dimulai dengan { atau [")
+        }
+    }
+
+    internal fun rgbToHsl(r: Int, g: Int, b: Int): DoubleArray {
+        val rf = r / 255.0
+        val gf = g / 255.0
+        val bf = b / 255.0
+        val max = maxOf(rf, gf, bf)
+        val min = minOf(rf, gf, bf)
+        val d = max - min
+        var h = 0.0
+        val l = (max + min) / 2.0
+        val sat = if (d == 0.0) 0.0 else d / (1.0 - kotlin.math.abs(2.0 * l - 1.0))
+        if (d != 0.0) {
+            h = when (max) {
+                rf -> ((gf - bf) / d) % 6.0
+                gf -> ((bf - rf) / d) + 2.0
+                else -> ((rf - gf) / d) + 4.0
+            } / 6.0
+            if (h < 0.0) h += 1.0
+        }
+        return doubleArrayOf(h * 360.0, sat * 100.0, l * 100.0)
+    }
+
+    internal fun fmt(value: Double): String =
+        String.format(Locale.US, "%.2f", value).trimEnd('0').trimEnd('.')
+
+    internal fun frac(raw: String): Pair<Long, Long> {
+        val text = raw.trim()
+        if (text.isEmpty()) error("Pecahan kosong")
+        val parts = text.split('/')
+        if (parts.size == 1) {
+            val whole = parts[0].trim().toLongOrNull() ?: error("Pecahan tidak valid")
+            return whole to 1L
+        }
+        if (parts.size != 2) error("Format pecahan: a/b")
+        val numerator = parts[0].trim().toLongOrNull() ?: error("Pembilang tidak valid")
+        val denominator = parts[1].trim().toLongOrNull() ?: error("Penyebut tidak valid")
+        require(denominator != 0L) { "Penyebut nol" }
+        return if (denominator < 0) -numerator to -denominator else numerator to denominator
+    }
+
     // ===================== Pengelola Keuangan Berbasis Pembaca Notifikasi =====================
 
 
@@ -8591,6 +8691,14 @@ internal fun renderStudioCanvas() {
                 15 -> confirmClearFinance(db)
             }
         }.show()
+    }
+
+    internal fun showFinancePrivacyGuide() {
+        AlertDialog.Builder(this)
+            .setTitle("Privasi Keuangan")
+            .setMessage("Data transaksi, wallet, anggaran, target, dan pengaturan keuangan disimpan lokal di database aplikasi. Aplikasi tidak mengirim data ke server untuk fitur ini.")
+            .setPositiveButton("Mengerti", null)
+            .show()
     }
 
     internal fun confirmClearFinance(db: FinanceDb) {
@@ -8743,7 +8851,7 @@ internal fun renderStudioCanvas() {
         AlertDialog.Builder(this).setTitle("Tambah Transaksi").setView(box).setPositiveButton("Simpan"){_,_->
             val v=amount.num()
             if(v==null||v<=0){toast("Nominal tidak valid");return@setPositiveButton}
-            db.addTx(if(type.selectedItemPosition==1)"masuk" else "keluar",cat.selectedItem.toString(),wallet.selectedItem.toString(),v,merchant.text.toString().trim(),true,"manual")
+            db.insertTx(FinanceTx(timestamp = System.currentTimeMillis(), type = if(type.selectedItemPosition==1) "masuk" else "keluar", amount = v, category = cat.selectedItem.toString(), merchant = merchant.text.toString().trim(), sourceApp = "manual", rawText = merchant.text.toString().trim(), manual = true, walletName = wallet.selectedItem.toString()))
             toast("Transaksi disimpan"); financeReaderTool()
         }.setNegativeButton("Batal",null).show()
     }
@@ -9032,6 +9140,12 @@ internal fun renderStudioCanvas() {
     )
     internal fun qrSourceLabel(id: String) = when (id) { "file" -> "File"; "foto" -> "Foto & Scan"; else -> "Teks / Link" }
     internal fun qrSourceIcon(id: String) = when (id) { "file" -> "▤"; "foto" -> "▧"; else -> "✎" }
+
+    internal var qrSourceExpanded: Boolean = false
+    internal var qrSelectedSource: String? = null
+    internal var qrPickedUri: Uri? = null
+    internal var qrPickedName: String? = null
+    internal var qrScanBusy: Boolean = false
 
     internal fun qrTool() {
         clearPage("QR Scanner")
