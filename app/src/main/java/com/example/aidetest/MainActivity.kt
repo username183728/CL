@@ -8531,7 +8531,7 @@ internal fun renderStudioCanvas() {
     internal fun fractionOp(a: String, b: String, op: String): String {
         val x = frac(a)
         val y = frac(b)
-        if (op == "÷" && y.first == 0) error("Pembagi nol")
+        if (op == "÷" && y.first == 0L) error("Pembagi nol")
         val numerator = when (op) {
             "+" -> x.first * y.second + y.first * x.second
             "−" -> x.first * y.second - y.first * x.second
@@ -8544,7 +8544,7 @@ internal fun renderStudioCanvas() {
             "÷" -> x.second * y.first
             else -> error("Operasi tidak didukung")
         }
-        require(denominator != 0) { "Penyebut nol" }
+        require(denominator != 0L) { "Penyebut nol" }
         val gcd = kotlin.math.abs(
             java.math.BigInteger.valueOf(numerator.toLong())
                 .gcd(java.math.BigInteger.valueOf(denominator.toLong()))
@@ -8645,7 +8645,7 @@ internal fun renderStudioCanvas() {
         if (parts.size != 2) error("Format pecahan: a/b")
         val numerator = parts[0].trim().toLongOrNull() ?: error("Pembilang tidak valid")
         val denominator = parts[1].trim().toLongOrNull() ?: error("Penyebut tidak valid")
-        require(denominator != 0) { "Penyebut nol" }
+        require(denominator != 0L) { "Penyebut nol" }
         return if (denominator < 0) -numerator to -denominator else numerator to denominator
     }
 
