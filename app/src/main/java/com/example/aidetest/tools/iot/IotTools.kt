@@ -191,14 +191,14 @@ fun MainActivity.espLedStudio() {
         }
         val minus = Button(this).apply {
             text = "−"; textSize = 22f; setTextColor(textMain); background = bg(panel, 14, line); setStateListAnimator(null)
-            setOnClickListener { setLedCount(ledCount - 1) }
+            setOnClickListener { updateLedCount(ledCount - 1) }
         }
         ledCountLabel = TextView(this).apply {
             text = ledCount.toString(); textSize = 22f; gravity = Gravity.CENTER; setTextColor(textMain)
         }
         val plus = Button(this).apply {
             text = "+"; textSize = 22f; setTextColor(textMain); background = bg(panel, 14, line); setStateListAnimator(null)
-            setOnClickListener { setLedCount(ledCount + 1) }
+            setOnClickListener { updateLedCount(ledCount + 1) }
         }
         countRow.addView(minus, LinearLayout.LayoutParams(dp(52), dp(48)))
         countRow.addView(ledCountLabel, LinearLayout.LayoutParams(0, dp(48), 1f))

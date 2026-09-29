@@ -3760,7 +3760,7 @@ internal fun renderStudioCanvas() {
 
     }
 
-    internal fun setLedCount(value: Int) {
+    internal fun updateLedCount(value: Int) {
         val newCount = value.coerceIn(1, 50)
         if (newCount == ledCount) return
         ledCount = newCount
@@ -6130,7 +6130,7 @@ internal fun renderStudioCanvas() {
         }
     }
 
-    internal fun setEditorMode(mode: String) {
+    internal fun applyEditorMode(mode: String) {
         val currentFile = editorFile
         editorExternalTarget = null
         editorExternalMode = null

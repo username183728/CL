@@ -1,0 +1,7 @@
+GITLS 2.34.5 v6 repair audit
+Source baseline: ALL_ERRORS_FIXED_v5
+Fixes:
+- Renamed MainActivity.apply setter-clashing method setEditorMode -> applyEditorMode.
+- Renamed MainActivity setter-clashing method setLedCount -> updateLedCount.
+- Updated IotTools callers accordingly.
+- Existing v5 Long/Int and SecurityTools fixes retained.
