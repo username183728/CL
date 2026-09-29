@@ -8531,7 +8531,7 @@ internal fun renderStudioCanvas() {
     internal fun fractionOp(a: String, b: String, op: String): String {
         val x = frac(a)
         val y = frac(b)
-        if (op == "÷" && y.first == 0L) error("Pembagi nol")
+        if (op == "÷" && y.first == 0) error("Pembagi nol")
         val numerator = when (op) {
             "+" -> x.first * y.second + y.first * x.second
             "−" -> x.first * y.second - y.first * x.second
@@ -8544,7 +8544,7 @@ internal fun renderStudioCanvas() {
             "÷" -> x.second * y.first
             else -> error("Operasi tidak didukung")
         }
-        require(denominator != 0L) { "Penyebut nol" }
+        require(denominator != 0) { "Penyebut nol" }
         val gcd = kotlin.math.abs(
             java.math.BigInteger.valueOf(numerator.toLong())
                 .gcd(java.math.BigInteger.valueOf(denominator.toLong()))
@@ -8645,7 +8645,7 @@ internal fun renderStudioCanvas() {
         if (parts.size != 2) error("Format pecahan: a/b")
         val numerator = parts[0].trim().toLongOrNull() ?: error("Pembilang tidak valid")
         val denominator = parts[1].trim().toLongOrNull() ?: error("Penyebut tidak valid")
-        require(denominator != 0L) { "Penyebut nol" }
+        require(denominator != 0) { "Penyebut nol" }
         return if (denominator < 0) -numerator to -denominator else numerator to denominator
     }
 
@@ -9059,8 +9059,8 @@ internal fun renderStudioCanvas() {
                     }
                 } catch (e: Exception) { output("MQTT error: ${e.message}"); break }
             }
+            return messages.toString()
         }
-        return messages.toString()
     }
 
     internal fun wifiInfo() {
@@ -9071,7 +9071,7 @@ internal fun renderStudioCanvas() {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 2001)
             return
         }
-        val wm=applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
+        val wm=applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         @Suppress("DEPRECATION")
         val i=wm.connectionInfo
         out.text="SSID: ${i.ssid}\nBSSID: ${i.bssid}\nRSSI: ${i.rssi} dBm\nLink speed: ${i.linkSpeed} Mbps\nFrequency: ${i.frequency} MHz"
@@ -10246,7 +10246,7 @@ internal fun workspaceCard(dir: File): View {
                 return
             }
             val bytes = file.readBytes()
-            val mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.extension.toLowerCase(Locale.US))
+            val mime: String = MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.extension.toLowerCase(Locale.US))
                 ?: when (file.extension.toLowerCase(Locale.US)) {
                     "html", "htm" -> "text/html"
                     "css" -> "text/css"
@@ -10256,7 +10256,7 @@ internal fun workspaceCard(dir: File): View {
                     "wasm" -> "application/wasm"
                     else -> "application/octet-stream"
                 }
-            writeHttpResponse(socket, 200, "$mime; charset=utf-8", bytes, method == "HEAD")
+            writeHttpResponseBytes(socket, 200, "$mime; charset=utf-8", bytes, method == "HEAD")
         } catch (_: Throwable) {
             runCatching { writeHttpResponse(socket, 500, "text/plain; charset=utf-8", "Server Error") }
         } finally {
@@ -10271,10 +10271,10 @@ internal fun workspaceCard(dir: File): View {
         body: String,
         headOnly: Boolean = false
     ): Unit {
-        writeHttpResponse(socket, code, contentType, body.toByteArray(StandardCharsets.UTF_8), headOnly)
+        writeHttpResponseBytes(socket, code, contentType, body.toByteArray(StandardCharsets.UTF_8), headOnly)
     }
 
-    internal fun writeHttpResponse(
+    internal fun writeHttpResponseBytes(
         socket: Socket,
         code: Int,
         contentType: String,
@@ -10342,7 +10342,7 @@ internal fun workspaceCard(dir: File): View {
 
     internal fun currentWifiSsid(): String {
         return runCatching {
-            val wm=applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
+            val wm=applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
             @Suppress("DEPRECATION") val ssid=wm.connectionInfo?.ssid?.trim('"')
             if(ssid.isNullOrBlank() || ssid=="<unknown ssid>") "SSID tidak tersedia" else ssid
         }.getOrDefault("SSID tidak tersedia")

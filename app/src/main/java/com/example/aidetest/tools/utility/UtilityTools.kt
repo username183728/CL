@@ -167,8 +167,8 @@ fun MainActivity.hexTool() {
 fun MainActivity.base32Tool() {
         clearPage("Base32")
         val e=edit("Teks"); content.addView(e)
-        content.addView(button("Encode") { output(Base32.encode(e.text.toString().toByteArray())) })
-        content.addView(button("Decode") { output(runCatching { String(Base32.decode(e.text.toString())) }.getOrElse { "Base32 tidak valid" }) })
+        content.addView(button("Encode") { output(Base32Compat.encode(e.text.toString().toByteArray())) })
+        content.addView(button("Decode") { output(runCatching { String(Base32Compat.decode(e.text.toString())) }.getOrElse { "Base32 tidak valid" }) })
     }
 
 fun MainActivity.timestampTool() {

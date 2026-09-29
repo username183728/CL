@@ -211,7 +211,7 @@ internal fun formatDuration(ms: Long): String {
     return "${d}d ${h}h ${m}m ${s}s"
 }
 
-internal object Base32 {
+internal object Base32Compat {
     private const val ALPH = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
     fun encode(data: ByteArray): String {
         var buffer = 0; var bits = 0
@@ -238,4 +238,13 @@ internal object Base32 {
 internal object JSONObjectLite {
     fun escape(s: String): String =
         s.replace("\\","\\\\").replace("\"","\\\"").replace("\n","\\n").replace("\r","\\r").replace("\t","\\t")
+}
+
+
+internal fun MainActivity.studioHubCompat(title: String, description: String, tools: List<Pair<String, String>>) {
+    clearPage(title)
+    content.addView(toolHeader(title, description, "apps-box"))
+    tools.forEach { (name, id) ->
+        content.addView(settingRowClickable(name, "Buka tool", "Tool $name", iconFor(id)) { openTool(id) })
+    }
 }

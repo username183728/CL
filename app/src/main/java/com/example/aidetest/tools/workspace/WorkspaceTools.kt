@@ -84,31 +84,9 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 
 
 
-private fun MainActivity.workspaceRoot(): File =
-    File(filesDir, "workspaces").apply { mkdirs() }
-
-internal fun MainActivity.studioHub(
-    title: String,
-    description: String,
-    tools: List<Pair<String, String>>
-) {
-    clearPage(title)
-    content.addView(
-        toolHeader(title, description, "apps-box"),
-        LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(10) }
-    )
-    tools.forEach { (name, id) ->
-        content.addView(
-            settingRowClickable(name, "Buka tool", "Tool $name", iconFor(id)) {
-                openTool(id)
-            }
-        )
-    }
-}
-
 fun MainActivity.workspaceCenterTool() {
         clearPage("Workspace Center")
-        val dirs = workspaceRoot().listFiles()?.filter { it.isDirectory }?.sortedByDescending { it.lastModified() } ?: emptyList()
+        val dirs = workspaceRootCompat().listFiles()?.filter { it.isDirectory }?.sortedByDescending { it.lastModified() } ?: emptyList()
         content.addView(toolHeader("Workspace Center", "Project lokal • ${dirs.size} workspace", "view-dashboard-outline"), LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(9) })
         content.addView(subLabel("Satu tempat untuk project Web, kode, data, dan file kerja.", 11f))
 
@@ -119,7 +97,7 @@ fun MainActivity.workspaceCenterTool() {
                     val n = name.text.toString().trim()
                     if (n.isBlank()) { toast("Masukkan nama workspace"); return@setPositiveButton }
                     val safe = n.replace(Regex("[^A-Za-z0-9._ -]"), "_").trim().replace(" ", "_")
-                    val dir = File(workspaceRoot(), safe)
+                    val dir = File(workspaceRootCompat(), safe)
                     if (!dir.mkdirs() && !dir.isDirectory) { toast("Workspace gagal dibuat"); return@setPositiveButton }
                     File(dir, "workspace.json").writeText(JSONObject().apply { put("name", n); put("createdAt", System.currentTimeMillis()); put("version", 1) }.toString(2), StandardCharsets.UTF_8)
                     prefs.edit().putString("last_workspace", dir.absolutePath).apply(); toast("Workspace dibuat: $safe"); workspaceCenterTool()
@@ -192,12 +170,12 @@ fun MainActivity.studioCenterTool() {
         studios.forEach { (n,id) -> content.addView(settingRowClickable(n, "Buka workspace", "Studio terpadu", iconFor(id)) { openTool(id) }) }
     }
 
-fun MainActivity.networkStudioTool(){ studioHub("Network Studio","Semua alat jaringan dalam satu workspace.",listOf("Ping" to "ping","Port Checker" to "port","DNS Lookup" to "dns","Reverse DNS" to "rdns","Whois" to "whois","Traceroute" to "traceroute","HTTP Headers" to "httpheaders","SSL Certificate" to "ssl","Network Scanner" to "netscanner","Subnet Calculator" to "subnetcalc")) }
+fun MainActivity.networkStudioTool(){ studioHubCompat("Network Studio","Semua alat jaringan dalam satu workspace.",listOf("Ping" to "ping","Port Checker" to "port","DNS Lookup" to "dns","Reverse DNS" to "rdns","Whois" to "whois","Traceroute" to "traceroute","HTTP Headers" to "httpheaders","SSL Certificate" to "ssl","Network Scanner" to "netscanner","Subnet Calculator" to "subnetcalc")) }
 
-fun MainActivity.developerStudioTool(){ studioHub("Developer Studio","Editor dan formatter untuk developer.",listOf("Web Project Builder" to "webproject","JSON Formatter" to "jsonformat","XML Formatter" to "xmlformat","Regex Tester" to "regex","Timestamp Converter" to "timestamp","Base64" to "base64","JWT Decoder" to "jwt","UUID Generator" to "uuid","Hash Generator" to "hash")) }
+fun MainActivity.developerStudioTool(){ studioHubCompat("Developer Studio","Editor dan formatter untuk developer.",listOf("Web Project Builder" to "webproject","JSON Formatter" to "jsonformat","XML Formatter" to "xmlformat","Regex Tester" to "regex","Timestamp Converter" to "timestamp","Base64" to "base64","JWT Decoder" to "jwt","UUID Generator" to "uuid","Hash Generator" to "hash")) }
 
-fun MainActivity.fileStudioTool(){ studioHub("File Studio","Kelola, cari dan analisis file.",listOf("File Manager" to "filemanager","File Search" to "filesearch","Duplicate Finder" to "dedupe","ZIP / UNZIP" to "zip","File Converter" to "fileconvert","Checksum File" to "checksum","Storage Analyzer" to "storage")) }
+fun MainActivity.fileStudioTool(){ studioHubCompat("File Studio","Kelola, cari dan analisis file.",listOf("File Manager" to "filemanager","File Search" to "filesearch","Duplicate Finder" to "dedupe","ZIP / UNZIP" to "zip","File Converter" to "fileconvert","Checksum File" to "checksum","Storage Analyzer" to "storage")) }
 
-fun MainActivity.systemStudioTool(){ studioHub("System Studio","Informasi perangkat dan sistem.",listOf("Device Info" to "deviceinfo","Battery Info" to "battery","Storage Analyzer" to "storage","System Info" to "system","Network Info" to "network","App Manager" to "apps")) }
+fun MainActivity.systemStudioTool(){ studioHubCompat("System Studio","Informasi perangkat dan sistem.",listOf("Device Info" to "deviceinfo","Battery Info" to "battery","Storage Analyzer" to "storage","System Info" to "system","Network Info" to "network","App Manager" to "apps")) }
 
-fun MainActivity.utilityStudioTool(){ studioHub("Utility Studio","Utilitas sehari-hari.",listOf("Calculator" to "number","Clipboard Manager" to "clipboard","Unit Converter" to "unitconverter","QR Scanner" to "qr","OCR" to "ocr","Password Generator" to "password","Notes / Notifikasi" to "reminder")) }
+fun MainActivity.utilityStudioTool(){ studioHubCompat("Utility Studio","Utilitas sehari-hari.",listOf("Calculator" to "number","Clipboard Manager" to "clipboard","Unit Converter" to "unitconverter","QR Scanner" to "qr","OCR" to "ocr","Password Generator" to "password","Notes / Notifikasi" to "reminder")) }

@@ -177,6 +177,7 @@ fun MainActivity.espAutoDiscovery() {
     }
 
 fun MainActivity.espLedStudio() {
+        val activity = this
         stopLedPlayback()
         clearPage("ESP LED Studio")
         content.addView(label("ESP LED Studio", 22f, true))
@@ -219,7 +220,7 @@ fun MainActivity.espLedStudio() {
             gravity = Gravity.CENTER_VERTICAL
             setPadding(0, dp(10), 0, 0)
             addView(ledLayoutLabel, LinearLayout.LayoutParams(0, dp(48), 1f))
-            addView(TextView(this@espLedStudio).apply {
+            addView(TextView(activity).apply {
                 text = "›"; textSize = 28f; gravity = Gravity.CENTER; setTextColor(textMuted)
             }, LinearLayout.LayoutParams(dp(48), dp(48)))
             setOnClickListener { showLedLayoutPicker() }
@@ -364,13 +365,14 @@ fun MainActivity.espDeviceManager() {
     }
 
 fun MainActivity.espGpioController() {
+        val activity = this
         clearPage("ESP GPIO Controller")
         addToolHeader("ESP GPIO Controller", "Kontrol pin ESP dengan panel HIGH/LOW yang lebih jelas.", "GPIO")
         content.addView(toolSection("CONNECTION"))
         val base = espBaseUrlField(); content.addView(base)
         val pinEdit = edit("GPIO, contoh 2"); pinEdit.setText("2"); content.addView(pinEdit)
         content.addView(toolSection("MODE & PWM"))
-        val mode = Spinner(this).apply { adapter = ArrayAdapter(this@espGpioController, android.R.layout.simple_spinner_dropdown_item, arrayOf("OUTPUT", "INPUT", "PWM")) }
+        val mode = Spinner(this).apply { adapter = ArrayAdapter(activity, android.R.layout.simple_spinner_dropdown_item, arrayOf("OUTPUT", "INPUT", "PWM")) }
         content.addView(mode, LinearLayout.LayoutParams(-1, dp(52)).apply { bottomMargin = dp(8) })
         val pwm = edit("PWM duty 0-255 (untuk PWM)"); pwm.setText("128"); content.addView(pwm)
         val state = toolStatus("Siap"); content.addView(state)
@@ -436,10 +438,11 @@ fun MainActivity.espOtaFirmware() {
     }
 
 fun MainActivity.espHttpApiTester() {
+        val activity = this
         clearPage("ESP HTTP/API Tester")
         addToolHeader("ESP HTTP / API Tester", "Uji endpoint ESP dengan method, body, dan response dalam satu workspace.", "API")
         content.addView(toolSection("REQUEST"))
-        val method = Spinner(this).apply { adapter = ArrayAdapter(this@espHttpApiTester, android.R.layout.simple_spinner_dropdown_item, arrayOf("GET", "POST", "PUT", "DELETE", "PATCH")) }
+        val method = Spinner(this).apply { adapter = ArrayAdapter(activity, android.R.layout.simple_spinner_dropdown_item, arrayOf("GET", "POST", "PUT", "DELETE", "PATCH")) }
         content.addView(method, LinearLayout.LayoutParams(-1, dp(52)).apply { bottomMargin = dp(8) })
         val url = edit("http://192.168.4.1/status"); content.addView(url)
         val body = edit("JSON body (opsional)", true); content.addView(body)
